@@ -12,9 +12,9 @@ jobs:
       - name: Deploy using ssh
         uses: appleboy/ssh-action@v1.0.3 # Menggunakan versi spesifik lebih aman
         with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER}}
+          key: ${{ secrets.SSH_KEY}}
           # Jika SSH Anda pakai port custom (selain 22), tambahkan:
           # port: ${{ secrets.SSH_PORT }} 
           script: |

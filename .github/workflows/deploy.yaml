@@ -9,34 +9,44 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy using ssh
-        uses: appleboy/ssh-action@v1.0.3 # Menggunakan versi spesifik lebih aman
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER}}
-          key: ${{ secrets.SSH_KEY}}
-          # Jika SSH Anda pakai port custom (selain 22), tambahkan:
-          # port: ${{ secrets.SSH_PORT }} 
-          script: |
-            cd ~/culinary-rag
-            
-            # 1. Tarik kode terbaru, paksa overwrite jika ada konflik kecil
-            git fetch --all
-            git reset --hard origin/main
-            
-            # 2. Update Backend (Python/FastAPI)
-            cd backend
-            # Pastikan venv ada, jika tidak, buat otomatis (opsional)
-            python3 -m venv venv --upgrade-deps || true 
-            source venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt
-            pm2 restart culinary-backend || pm2 start main.py --name culinary-backend
-            
-            # 3. Update Frontend (Next.js)
-            cd ../frontend
-            npm ci # Lebih stabil untuk production dibanding 'npm install'
-            npm run build
-            pm2 restart culinary-frontend || pm2 start npm --name "culinary-frontend" -- start
-            
-            echo "Deployment to VPS successfully finished!"
+    - name: Deploy using SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script_stop: true
+        script: |
+          set -euo pipefail
+
+          APP_DIR=/home/ubuntu/culinary-rag
+          FRONT_DIR=$APP_DIR/frontend
+
+          # Load nvm if available (biar npm/node konsisten)
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+          cd "$APP_DIR"
+
+          # 1) Sync source dari main
+          git fetch origin main
+          git reset --hard origin/main
+
+          # 2) Backend update
+          python3 -m venv venv || true
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pm2 restart culinary-backend || pm2 start "$APP_DIR/venv/bin/python" --name culinary-backend -- -m uvicorn backend.api:app --host 0.0.0.0 --port 8000
+
+          # 3) Frontend update (clean build supaya tidak stale)
+          cd "$FRONT_DIR"
+          npm ci
+          rm -rf .next
+          npm run build
+          pm2 delete culinary-frontend || true
+          pm2 start npm --name culinary-frontend -- start
+
+          # 4) Persist pm2 process list
+          pm2 save
+          pm2 status

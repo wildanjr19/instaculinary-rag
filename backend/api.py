@@ -5,7 +5,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
-# Tambahkan ini agar VPS bisa menemukan folder src kamu
+# root path untuk import src prevent eror
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 load_dotenv()
@@ -16,16 +16,16 @@ from langchain_openai import ChatOpenAI
 
 app = FastAPI()
 
-# PERBAIKAN CORS: Izinkan domain kamu agar frontend bisa akses
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Sementara set ke "*" agar pasti jalan, atau masukkan domain kamu
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Pastikan DEEPSEEK_API_KEY sudah ada di file .env di VPS!
+# DeepSeek
 llm = ChatOpenAI(
     model="deepseek-chat",
     base_url="https://api.deepseek.com",
@@ -36,7 +36,7 @@ llm = ChatOpenAI(
 class QueryRequest(BaseModel):
     query: str
 
-@app.get("/") # Tambahkan ini untuk tes di browser
+@app.get("/") 
 async def root():
     return {"status": "Backend Kuliner RAG Berjalan"}
 

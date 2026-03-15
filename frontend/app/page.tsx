@@ -153,7 +153,7 @@ export default function Home() {
               <span className="text-sm text-gray-500">Kuliner Legendaris, Instagramable, dan Kaki Lima</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-5xl font-['Playfair_Display',_serif] text-gray-900">2.000+</span>
+              <span className="text-5xl font-['Playfair_Display',_serif] text-gray-900">1.000+</span>
               <span className="text-sm font-bold text-gray-800 mt-4 mb-1">Menu Terkurasi Food Selebgram</span>
               <span className="text-sm text-gray-500">Gudeg, soto, bakpia, selat, dll</span>
             </div>

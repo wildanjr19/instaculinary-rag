@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag_project"
+version = "0.1.0"
+description = "Proyek RAG untuk Instagram Scrapping"
+dependencies = [
+    "pandas",
+    "python-dotenv"
+    "langchain",
+    "langchain-community",
+    "langchain-openai",
+    "langchain-google-genai",
+    "langchain-chroma",
+    "langchain-pinecone"
+    "chromadb",
+    "sentence-transformers",
+    "pinecone-client",
+    "requests"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "config*"]

@@ -1,0 +1,42 @@
+name: Deploy Culinary RAG
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy using ssh
+        uses: appleboy/ssh-action@v1.0.3 # Menggunakan versi spesifik lebih aman
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Jika SSH Anda pakai port custom (selain 22), tambahkan:
+          # port: ${{ secrets.SSH_PORT }} 
+          script: |
+            cd ~/culinary-rag
+            
+            # 1. Tarik kode terbaru, paksa overwrite jika ada konflik kecil
+            git fetch --all
+            git reset --hard origin/main
+            
+            # 2. Update Backend (Python/FastAPI)
+            cd backend
+            # Pastikan venv ada, jika tidak, buat otomatis (opsional)
+            python3 -m venv venv --upgrade-deps || true 
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pm2 restart culinary-backend || pm2 start main.py --name culinary-backend
+            
+            # 3. Update Frontend (Next.js)
+            cd ../frontend
+            npm ci # Lebih stabil untuk production dibanding 'npm install'
+            npm run build
+            pm2 restart culinary-frontend || pm2 start npm --name "culinary-frontend" -- start
+            
+            echo "Deployment to VPS successfully finished!"

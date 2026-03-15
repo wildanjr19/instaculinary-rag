@@ -33,10 +33,10 @@ export default function Home() {
   };
 
   const suggestions = [
-    'soto ayam gading solo',
-    'gudeg enak di jogja legendaris',
-    'bakpia pathok 25 asli',
-    'selat solo viaduk'
+    'Jajanan sekitar kampus UNY Yogyakarta',
+    'Makanan dekat Mangkunegaran Solo',
+    'Mie ayam enak di Jogja yang buka malam',
+    'Rekomendasi makanan yang buka 24 jam'
   ];
 
   return (
@@ -150,11 +150,11 @@ export default function Home() {
             <div className="flex flex-col items-center">
               <span className="text-5xl font-['Playfair_Display',_serif] text-gray-900">500+</span>
               <span className="text-sm font-bold text-gray-800 mt-4 mb-1">Rekomendasi Tempat</span>
-              <span className="text-sm text-gray-500">Warung legendaris, cafe, & kaki lima</span>
+              <span className="text-sm text-gray-500">Kuliner Legendaris, Instagramable, dan Kaki Lima</span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-5xl font-['Playfair_Display',_serif] text-gray-900">2.000+</span>
-              <span className="text-sm font-bold text-gray-800 mt-4 mb-1">Menu Terkurasi</span>
+              <span className="text-sm font-bold text-gray-800 mt-4 mb-1">Menu Terkurasi Food Selebgram</span>
               <span className="text-sm text-gray-500">Gudeg, soto, bakpia, selat, dll</span>
             </div>
             <div className="flex flex-col items-center">

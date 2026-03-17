@@ -23,9 +23,9 @@ export const metadata: Metadata = {
   title: "Kitab Kuliner | Rekomendasi Jogja & Solo", // Diperbarui sesuai tema
   description: "Temukan kuliner legendaris dan menu favorit di Yogyakarta dan Surakarta.",
   icons: {
-    icon: "/images/logo_instacullinary.ico",
-    shortcut: "/images/logo_instacullinary.ico",
-    apple: "/images/logo_instacullinary.ico",
+    icon: "/images/logo_v2.ico",
+    shortcut: "/images/logo_v2.ico",
+    apple: "/images/logo_v2.ico",
   },
 };
 

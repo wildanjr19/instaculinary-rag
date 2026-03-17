@@ -57,7 +57,7 @@ export default function Home() {
         <header className="fixed top-0 left-0 right-0 bg-white/95 shadow-sm px-6 py-4 flex items-center justify-between z-20 backdrop-blur-sm border-b border-gray-100">
           <div className="flex items-center gap-3">
             <Image
-              src="/images/logo_instacullinary.svg"
+              src="/images/logo_v2.svg"
               alt="Logo Kitab Kuliner"
               width={40}
               height={40}
@@ -82,7 +82,7 @@ export default function Home() {
             <div className="mb-6 flex justify-center">
                <div className="h-20 w-20 border border-gray-800 rounded-full bg-white/85 p-2 shadow-sm flex items-center justify-center">
                  <Image
-                   src="/images/logo_instacullinary.svg"
+                   src="/images/logo_v2.svg"
                    alt="Ikon Kitab Kuliner"
                    width={60}
                    height={60}

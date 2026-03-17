@@ -1,5 +1,6 @@
 // app/page.tsx
 'use client';
+import Image from 'next/image';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
@@ -55,7 +56,14 @@ export default function Home() {
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 bg-white/95 shadow-sm px-6 py-4 flex items-center justify-between z-20 backdrop-blur-sm border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🍜</span>
+            <Image
+              src="/images/logo.svg"
+              alt="Logo Kitab Kuliner"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain"
+              priority
+            />
             {/* Menggunakan arbitrary value untuk font serif */}
             <h1 className="text-2xl font-['Playfair_Display',_serif] text-[#033B2B]">Kitab Kuliner</h1>
           </div>
@@ -71,9 +79,15 @@ export default function Home() {
         {/* Hero Section */}
         <section className="flex flex-col items-center justify-start pt-40 pb-24 px-4 min-h-[90vh]">
           <div className="text-center mb-12">
-            <div className="text-5xl mb-6 flex justify-center">
-               <div className="h-16 w-16 border border-gray-800 rounded-full flex items-center justify-center">
-                 🍜
+            <div className="mb-6 flex justify-center">
+               <div className="h-20 w-20 border border-gray-800 rounded-full bg-white/85 p-2 shadow-sm flex items-center justify-center">
+                 <Image
+                   src="/images/logo.svg"
+                   alt="Ikon Kitab Kuliner"
+                   width={60}
+                   height={60}
+                   className="h-14 w-14 object-contain"
+                 />
                </div>
             </div>
             <h2 className="text-5xl font-['Playfair_Display',_serif] text-[#033B2B] mb-4 tracking-tight">

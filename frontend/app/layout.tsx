@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
-  display: "swap", // Memastikan teks tetap terlihat saat font sedang dimuat
+  display: "swap", 
 });
 
 export const metadata: Metadata = {
-  title: "Kitab Kuliner | Rekomendasi Jogja & Solo", // Diperbarui sesuai tema
+  title: "Kitab Kuliner | Rekomendasi Jogja & Solo", 
   description: "Temukan kuliner legendaris dan menu favorit di Yogyakarta dan Surakarta.",
   icons: {
     icon: "/images/logo_v2.ico",

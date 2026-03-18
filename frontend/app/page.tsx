@@ -40,6 +40,21 @@ export default function Home() {
     'Rekomendasi makanan yang buka 24 jam'
   ];
 
+  const sourceAccounts = {
+    jogja: [
+      '@jogjabikinlaper',
+      '@kulinerjogya',
+      '@infonongkrongjogja',
+      '@melipirkulineran',
+    ],
+    solo: [
+      '@carikulinersolo',
+      '@infomakansolo',
+      '@solokenyang',
+      '@sijajanjalan',
+    ],
+  };
+
   return (
     <main className="min-h-screen relative font-sans">
       {/* Gambar Latar Belakang */}
@@ -175,6 +190,77 @@ export default function Home() {
               <span className="text-5xl font-['Playfair_Display',_serif] text-gray-900">100%</span>
               <span className="text-sm font-bold text-gray-800 mt-4 mb-1">Berbasis AI & Review</span>
               <span className="text-sm text-gray-500">Didukung oleh DeepSeek AI</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Bagian Sumber Data */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-[#FFF8E6] via-[#FFFBEB] to-[#F3F9F5] border-t border-[#E4E7D7] w-full py-20 px-4">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[36rem] h-[36rem] rounded-full bg-[#0B6A4A]/10 blur-3xl pointer-events-none" />
+
+          <div className="relative max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-xs font-bold tracking-[0.24em] text-[#0B6A4A] uppercase mb-4">
+                Sumber Data Terverifikasi
+              </p>
+              <h3 className="text-4xl md:text-5xl font-['Playfair_Display',_serif] text-[#033B2B] mb-4">
+                Akun Referensi Kuliner
+              </h3>
+              <p className="max-w-2xl mx-auto text-base md:text-lg text-[#456353] leading-relaxed">
+                Basis rekomendasi kami disusun dari akun kurasi kuliner terpercaya di Jogja dan Solo.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              <article className="rounded-3xl border border-[#CFE3D7] bg-white/80 backdrop-blur-sm shadow-[0_14px_38px_rgba(5,65,47,0.08)] p-7 md:p-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#E7F3EC] text-[#0B6A4A] text-xl">
+                    YK
+                  </span>
+                  <div>
+                    <h4 className="text-2xl font-['Playfair_Display',_serif] text-[#033B2B]">Yogyakarta</h4>
+                    <p className="text-sm text-[#4B6359]">Akun kurator kuliner Jogja</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {sourceAccounts.jogja.map(account => (
+                    <a
+                      key={account}
+                      href={`https://instagram.com/${account.replace('@', '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center rounded-full border border-[#BBD5C7] bg-[#F4FBF7] px-4 py-2 text-sm font-semibold text-[#0B6A4A] hover:bg-[#E8F6EF] transition-colors"
+                    >
+                      {account}
+                    </a>
+                  ))}
+                </div>
+              </article>
+
+              <article className="rounded-3xl border border-[#D9DCC5] bg-white/80 backdrop-blur-sm shadow-[0_14px_38px_rgba(88,67,22,0.08)] p-7 md:p-8">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F0DC] text-[#705A25] text-xl">
+                    SKA
+                  </span>
+                  <div>
+                    <h4 className="text-2xl font-['Playfair_Display',_serif] text-[#033B2B]">Solo</h4>
+                    <p className="text-sm text-[#665F47]">Akun kurator kuliner Solo</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {sourceAccounts.solo.map(account => (
+                    <a
+                      key={account}
+                      href={`https://instagram.com/${account.replace('@', '')}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center rounded-full border border-[#D8CFB2] bg-[#FFF8E2] px-4 py-2 text-sm font-semibold text-[#705A25] hover:bg-[#FBEFCC] transition-colors"
+                    >
+                      {account}
+                    </a>
+                  ))}
+                </div>
+              </article>
             </div>
           </div>
         </section>

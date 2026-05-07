@@ -21,7 +21,7 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "Kitab Kuliner | Rekomendasi Jogja & Solo", 
-  description: "Temukan kuliner legendaris dan menu favorit di Yogyakarta dan Surakarta.",
+  description: "Temukan kuliner dan menu favorit di Yogyakarta dan Surakarta.",
   icons: {
     icon: "/images/logo_v2.ico",
     shortcut: "/images/logo_v2.ico",

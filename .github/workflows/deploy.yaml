@@ -28,24 +28,34 @@ jobs:
 
           cd "$APP_DIR"
 
+          # --- PENGAMANAN .ENV ---
+          # Backup .env agar tidak hilang saat git reset
+          cp .env .env.bak || true
+
           # 1) Sync source dari main
           git fetch origin main
           git reset --hard origin/main
+
+          # Kembalikan .env setelah reset
+          mv .env.bak .env || true
+          # -----------------------
 
           # 2) Backend update
           python3 -m venv venv || true
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
+
+          # Gunakan --if-present atau check pm2 status untuk menghindari downtime lama
           pm2 restart culinary-backend || pm2 start "$APP_DIR/venv/bin/python" --name culinary-backend -- -m uvicorn backend.api:app --host 0.0.0.0 --port 8000
 
-          # 3) Frontend update (clean build supaya tidak stale)
+          # 3) Frontend update
           cd "$FRONT_DIR"
           npm ci
           rm -rf .next
           npm run build
-          pm2 delete culinary-frontend || true
-          pm2 start npm --name culinary-frontend -- start
+          # Restart frontend agar sinkron dengan OpenResty 1Panel
+          pm2 restart culinary-frontend || pm2 start npm --name culinary-frontend -- start
 
           # 4) Persist pm2 process list
           pm2 save

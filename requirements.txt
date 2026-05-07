@@ -9,4 +9,3 @@ langchain-pinecone
 pinecone-client
 requests
 fastapi
-prometheus-fastapi-instrumentator==6.1.0

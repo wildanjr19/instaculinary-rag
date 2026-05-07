@@ -41,6 +41,7 @@ def build_context(docs):
             f"Opini Food Vlogger: {meta.get('opini', '-')}\n"
             f"Area: {meta.get('daerah', '-')}\n"
             f"Sumber Akun: @{meta.get('sumber', '-')}\n"
+            f"URL Postingan: {meta.get('url', '-')}\n"
             f"\nDetail Lengkap:\n{doc.page_content}\n\n"
         )
     return context
@@ -62,7 +63,7 @@ ATURAN OUTPUT (WAJIB DIPATUHI):
 3. Gunakan deskripsi 2-3 kalimat yang informatif dan menggugah selera.
 4. "hours" diisi dengan format "HH:MM - HH:MM" jika jam buka dan tutup tersedia. Jika tidak, isi "Informasi tidak tersedia".
 5. "price" diisi dengan rentang harga atau indikasi (contoh: "Rp 15.000 - Rp 35.000", "Mulai Rp 10.000", atau "Informasi tidak tersedia").
-6. "source_url" diisi format https://instagram.com/[nama_akun] (tanpa @).
+6. "source_url" diisi dengan URL postingan asli dari field "URL Postingan" yang ada di konteks. Jika URL tidak tersedia, fallback ke format https://instagram.com/[nama_akun] (tanpa @).
 
 Format JSON output:
 {{

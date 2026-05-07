@@ -1,14 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import json
 import os
+import re
 import sys
-import time
 from dotenv import load_dotenv
-
-# Monitoring Libraries
-from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import Counter, Histogram
 
 # root path untuk import src prevent eror
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -20,36 +17,6 @@ from src.utils import build_context, build_prompt
 from langchain_openai import ChatOpenAI
 
 app = FastAPI()
-
-# --- DEFINISI METRIK CUSTOM ---
-# 1. Menghitung total pertanyaan yang masuk
-TOTAL_CHAT_REQUESTS = Counter("rag_chat_requests_total", "Total request ke API Chat")
-
-# 2. Latency Vector DB (Pinecone/Chroma/dll)
-VECTOR_DB_LATENCY = Histogram(
-    "rag_vector_db_latency_seconds", 
-    "Waktu pencarian dokumen di Vector DB",
-    buckets=(.05, .1, .25, .5, 1.0, 2.5, 5.0)
-)
-
-# 3. Latency DeepSeek LLM
-LLM_GENERATE_LATENCY = Histogram(
-    "rag_llm_latency_seconds", 
-    "Waktu respon dari DeepSeek API",
-    buckets=(.5, 1.0, 2.0, 5.0, 10.0, 20.0, 60.0)
-)
-
-# 4. Counter Error (Jika API DeepSeek down atau Vector DB timeout)
-RAG_ERRORS = Counter("rag_errors_total", "Total error pada sistem RAG", ["type"])
-
-# --- INISIALISASI INSTRUMENTATOR ---
-# Ini untuk metrik standar (HTTP req, Memory, CPU)
-instrumentator = Instrumentator().instrument(app)
-
-@app.on_event("startup")
-async def startup():
-    # Ekspos metrik di path /metrics
-    instrumentator.expose(app, endpoint="/metrics")
 
 # CORS Middleware
 app.add_middleware(
@@ -77,26 +44,55 @@ async def root():
 
 @app.post("/api/chat")
 async def chat(request: QueryRequest):
-    TOTAL_CHAT_REQUESTS.inc()
-    
     try:
-        # --- 1. SEARCHING (Vector DB Metric) ---
-        start_vec = time.time()
+        # --- 1. SEARCHING ---
         docs = search_documents(request.query, k=5)
-        VECTOR_DB_LATENCY.observe(time.time() - start_vec)
 
         if not docs:
-            return {"answer": "Maaf, informasi tidak ditemukan."}
+            return {
+                "query_summary": "Tidak ada data relevan ditemukan.",
+                "results": []
+            }
         
         context = build_context(docs)
         prompt = build_prompt(context, request.query)
 
-        # --- 2. GENERATING (LLM Metric) ---
-        start_llm = time.time()
+        # --- 2. GENERATING ---
         response = llm.invoke(prompt)
-        LLM_GENERATE_LATENCY.observe(time.time() - start_llm)
 
-        return {"answer": response.content}
+        # --- 3. PARSE JSON (dengan toleransi markdown code block) ---
+        raw = response.content.strip()
+        
+        # Hapus markdown code fence jika LLM bandel
+        raw = re.sub(r'^```(?:json)?\s*', '', raw)
+        raw = re.sub(r'\s*```$', '', raw)
+        
+        try:
+            result = json.loads(raw)
+            return result
+        except json.JSONDecodeError:
+            # Fallback: bungkus teks mentah sebagai deskripsi
+            return {
+                "query_summary": f"Pencarian: {request.query}",
+                "results": [{
+                    "rank": 1,
+                    "name": "Hasil Pencarian",
+                    "address": "-",
+                    "hours": "-",
+                    "price": "-",
+                    "categories": [],
+                    "description": raw,
+                    "source": "-",
+                    "source_url": "-"
+                }]
+            }
+
+    except Exception as e:
+        return {
+            "query_summary": "Terjadi kesalahan sistem.",
+            "results": [],
+            "error": str(e)
+        }
 
     except Exception as e:
         # Mencatat tipe error (misal: DeepSeek API Error atau Connection Error)

@@ -5,7 +5,7 @@ import os
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # LOCAL DATA DIR
-DATA_DIR = os.path.join(ROOT_DIR, "data", "04_knowledge_base", "knowledge_base_v1.csv")
+DATA_DIR = os.path.join(ROOT_DIR, "data", "04_knowledge_base", "knowledge_base_v2.csv")
 
 # LOCAL EMBEDDING MODEL
 EMBEDDING_MODEL = os.path.join(ROOT_DIR, "models", "embedding", "multilingual-e5-small")
@@ -15,5 +15,5 @@ EMBEDDING_MODEL = os.path.join(ROOT_DIR, "models", "embedding", "multilingual-e5
 
 # PINECONE CONFIG
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = "culinary-rag-data"
+PINECONE_INDEX_NAME = "instaculinary-data"
 PINECONE_ENVIRONMENT = "us-east-1"

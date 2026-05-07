@@ -7,10 +7,11 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from src.embedding import JinaEmbedding  
 
-def build_vector_store(documents, index_name, embedding_function):
+def build_vector_store(documents, ids, index_name, embedding_function):
     vector_db = PineconeVectorStore.from_documents(
         documents=documents,
         embedding=embedding_function,
         index_name=index_name,
+        ids=ids,  # ID deterministik → bisa upsert di masa depan
     )
     return vector_db

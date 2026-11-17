@@ -1,43 +1,36 @@
-# src/ Directory
+# Core RAG
 
-Folder `src/` berisi kode aplikasi utama untuk proyek RAG (Retrieval-Augmented Generation). Kode-kode di sini menangani pemrosesan data, embedding, penyimpanan vektor, dan fungsi pencarian.
+Jalur aktif menggunakan Jina AI API (`jina-embeddings-v3`, 512 dimensi), Pinecone,
+dan DeepSeek (`deepseek-chat`). Semua perintah berikut dijalankan dari root
+repository dengan virtual environment aktif:
 
-## Struktur Folder
-
-```
-src/
-├── build_documents.py      # Script untuk membangun dokumen dari data
-├── load_data.py            # Script untuk memuat data dari file CSV
-├── main.py                 # Script utama untuk menjalankan aplikasi RAG
-├── search.py               # Script untuk fungsi pencarian dan retrieval
-├── sentence_transformer_embedding.py  # Script untuk embedding menggunakan Sentence Transformer
-├── utils.py                # Utilitas umum dan fungsi helper
-├── vector_store.py         # Script untuk mengelola penyimpanan vektor (ChromaDB)
-└── __pycache__/            # Cache bytecode Python (dihasilkan otomatis)
+```bash
+python -m src.main              # pencarian melalui terminal
+python -m src.create_vector_db  # ingest CSV ke Pinecone (menulis data)
 ```
 
-## Penjelasan Script
+| File | Fungsi |
+| --- | --- |
+| `main.py` | Input pertanyaan dan output JSON melalui CLI |
+| `llm.py` | Konfigurasi/client DeepSeek bersama untuk API dan CLI |
+| `search.py` | Mengambil lima dokumen terdekat secara default |
+| `utils.py` | Client Pinecone yang dicache, penyusunan konteks dan prompt |
+| `embedding.py` | Embedding Jina, batching, timeout dan retry |
+| `normalization.py` | Nilai kosong, nama akun, dan URL Instagram yang diizinkan |
+| `load_data.py` | Membaca CSV menggunakan Pandas |
+| `build_documents.py` | Dokumen dan metadata dari baris CSV, ID dari kolom `id` |
+| `vector_store.py` | Menulis dokumen ke index Pinecone |
+| `create_vector_db.py` | Alur ingest dari knowledge base final |
+| `matching_url.py` | Backfill URL postingan dari raw ke advance CSV berdasarkan caption |
+| `sentence_transformer_embedding.py` | Wrapper eksperimen embedding lokal; tidak dipakai aplikasi aktif |
 
-### build_documents.py
-Script ini bertanggung jawab untuk membangun dokumen dari data mentah. Mengubah data CSV menjadi format dokumen yang dapat digunakan untuk embedding dan penyimpanan vektor.
+Konfigurasi `.env`, persiapan index, dependensi, dan batasan ingest dijelaskan di
+[README utama](../README.md). Jalankan modul dengan `python -m src.<nama_modul>`;
+kode tidak memodifikasi `sys.path`.
 
-### load_data.py
-Script untuk memuat data dari berbagai sumber, terutama file CSV di folder `data/`. Menangani preprocessing awal dan validasi data sebelum diproses lebih lanjut.
-
-### main.py
-Script utama yang mengintegrasikan semua komponen RAG. Menjalankan pipeline lengkap dari pemuatan data hingga pencarian, dan dapat digunakan sebagai entry point aplikasi.
-
-### search.py
-Mengimplementasikan fungsi pencarian dan retrieval. Menggunakan embedding untuk menemukan dokumen relevan berdasarkan query pengguna, dan menghasilkan respons menggunakan model LLM.
-
-### sentence_transformer_embedding.py
-Menangani embedding teks menggunakan model Sentence Transformer (multilingual-e5-small). Mengubah teks menjadi vektor numerik untuk penyimpanan dan pencarian.
-
-### utils.py
-Berisi fungsi-fungsi utilitas umum seperti logging, validasi, dan helper functions yang digunakan di berbagai script lainnya.
-
-### vector_store.py
-Mengelola interaksi dengan database vektor (ChromaDB). Menangani penyimpanan, pengambilan, dan pencarian vektor dalam database.
-
-### __pycache__/
-Folder ini dihasilkan otomatis oleh Python untuk menyimpan bytecode compiled. Tidak perlu diedit atau di-commit ke version control.
+Ingest memvalidasi kolom, nama tempat, serta ID unik sebelum menghubungi provider.
+Input embedding kosong/tidak valid ditolak seluruhnya sebelum batch pertama,
+agar pasangan dokumen, ID, dan vektor tidak bergeser. Jumlah, urutan, dimensi,
+dan nilai numerik vektor dari Jina diperiksa sebelum dikembalikan untuk upload.
+Kegagalan ingest menghasilkan exit code 1; upsert banyak batch dapat bersifat
+parsial. Detail timeout/retry dan prosedur mengulang ingest ada di README utama.

@@ -1,19 +1,20 @@
-"""Path"""
+"""Konfigurasi bersama untuk backend, CLI, dan ingest data."""
 import os
+from pathlib import Path
 
-# Gunakan path absolut untuk menghindari error relatif
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from dotenv import load_dotenv
 
-# LOCAL DATA DIR
-DATA_DIR = os.path.join(ROOT_DIR, "data", "04_knowledge_base", "knowledge_base_v2.csv")
+ROOT_DIR = Path(__file__).resolve().parent.parent
+# Environment dari shell/deployment tetap memiliki prioritas atas file .env.
+load_dotenv(ROOT_DIR / ".env", override=False)
 
-# LOCAL EMBEDDING MODEL
-EMBEDDING_MODEL = os.path.join(ROOT_DIR, "models", "embedding", "multilingual-e5-small")
+DATA_DIR = ROOT_DIR / "data" / "04_knowledge_base" / "knowledge_base_v2.csv"
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME") or "instaculinary-data"
+EMBEDDING_DIMENSIONS = 512
 
-# LOCAL CHROMA DB
-# CHROMA_DIR = os.path.join(ROOT_DIR, "vector_db", "chroma_db")
 
-# PINECONE CONFIG
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = "instaculinary-data"
-PINECONE_ENVIRONMENT = "us-east-1"
+def get_required_env(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise ValueError(f"{name} belum diisi. Atur di environment atau .env root proyek.")
+    return value

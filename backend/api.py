@@ -1,49 +1,63 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import json
-import os
+import logging
 import re
-import sys
-from dotenv import load_dotenv
 
-# root path untuk import src prevent eror
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from openai import APITimeoutError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, ValidationInfo, field_validator
+import requests
 
-load_dotenv()
-
+from src.llm import load_llm
+from src.normalization import normalize_account, normalize_instagram_url
 from src.search import search_documents
 from src.utils import build_context, build_prompt
-from langchain_openai import ChatOpenAI
 
+logger = logging.getLogger(__name__)
 app = FastAPI()
 
-# CORS Middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# DeepSeek setup
-llm = ChatOpenAI(
-    model="deepseek-chat",
-    base_url="https://api.deepseek.com",
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    temperature=0.3
-)
+# Browser memakai proxy Next.js pada origin yang sama; backend tidak memerlukan CORS.
 
 class QueryRequest(BaseModel):
-    query: str
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    query: str = Field(min_length=1)
+
+
+class CulinaryResult(BaseModel):
+    rank: int
+    name: str
+    address: str
+    hours: str
+    price: str
+    categories: list[str]
+    description: str
+    source: str
+    source_url: str
+
+    @field_validator("source")
+    @classmethod
+    def normalize_source(cls, value: str) -> str:
+        return normalize_account(value) or "-"
+
+    @field_validator("source_url")
+    @classmethod
+    def normalize_source_url(cls, value: str, info: ValidationInfo) -> str:
+        return normalize_instagram_url(value, info.data.get("source", "")) or "-"
+
+
+class RAGResponse(BaseModel):
+    query_summary: str
+    results: list[CulinaryResult]
+
 
 @app.get("/") 
 async def root():
     return {"status": "Backend Kuliner RAG Berjalan"}
 
-@app.post("/api/chat")
-async def chat(request: QueryRequest):
+@app.post("/api/chat", response_model=RAGResponse)
+def chat(request: QueryRequest):
+    # SDK sinkron dijalankan di thread pool FastAPI, bukan di ASGI event loop.
     try:
         # --- 1. SEARCHING ---
         docs = search_documents(request.query, k=5)
@@ -58,7 +72,7 @@ async def chat(request: QueryRequest):
         prompt = build_prompt(context, request.query)
 
         # --- 2. GENERATING ---
-        response = llm.invoke(prompt)
+        response = load_llm().invoke(prompt)
 
         # --- 3. PARSE JSON (dengan toleransi markdown code block) ---
         raw = response.content.strip()
@@ -68,8 +82,7 @@ async def chat(request: QueryRequest):
         raw = re.sub(r'\s*```$', '', raw)
         
         try:
-            result = json.loads(raw)
-            return result
+            return RAGResponse.model_validate(json.loads(raw))
         except json.JSONDecodeError:
             # Fallback: bungkus teks mentah sebagai deskripsi
             return {
@@ -86,16 +99,44 @@ async def chat(request: QueryRequest):
                     "source_url": "-"
                 }]
             }
+        except ValidationError:
+            logger.warning("Respons LLM tidak sesuai format rekomendasi.")
+            return JSONResponse(
+                status_code=502,
+                content={
+                    "query_summary": "Jawaban layanan AI tidak dapat diproses.",
+                    "results": [],
+                    "error": "Format rekomendasi tidak valid. Silakan coba lagi.",
+                },
+            )
 
-    except Exception as e:
-        return {
-            "query_summary": "Terjadi kesalahan sistem.",
-            "results": [],
-            "error": str(e)
-        }
-
-    except Exception as e:
-        # Mencatat tipe error (misal: DeepSeek API Error atau Connection Error)
-        error_type = type(e).__name__
-        RAG_ERRORS.labels(type=error_type).inc()
-        return {"error": "Terjadi kesalahan pada sistem.", "details": str(e)}
+    except (requests.Timeout, APITimeoutError):
+        logger.exception("Batas waktu layanan rekomendasi terlampaui.")
+        return JSONResponse(
+            status_code=504,
+            content={
+                "query_summary": "Layanan rekomendasi terlalu lama merespons.",
+                "results": [],
+                "error": "Batas waktu pencarian terlampaui. Silakan coba lagi.",
+            },
+        )
+    except requests.RequestException:
+        logger.exception("Layanan embedding gagal merespons.")
+        return JSONResponse(
+            status_code=502,
+            content={
+                "query_summary": "Layanan rekomendasi tidak tersedia.",
+                "results": [],
+                "error": "Layanan embedding sedang bermasalah. Silakan coba lagi.",
+            },
+        )
+    except Exception:
+        logger.exception("Pencarian rekomendasi kuliner gagal.")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "query_summary": "Terjadi kesalahan sistem.",
+                "results": [],
+                "error": "Layanan rekomendasi sedang bermasalah. Silakan coba lagi.",
+            },
+        )

@@ -1,12 +1,14 @@
-name: Deploy Culinary RAG
+name: Deploy Culinary RAG (manual)
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
     - name: Deploy using SSH

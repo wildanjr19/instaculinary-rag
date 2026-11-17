@@ -4,25 +4,11 @@ Output sekarang dalam format JSON terstruktur.
 """
 
 import json
-import os
 import re
 
-from dotenv import load_dotenv
-load_dotenv()  # load .env
-
+from src.llm import load_llm
 from src.search import search_documents
 from src.utils import build_context, build_prompt
-
-from langchain_openai import ChatOpenAI
-
-
-def load_llm():
-    return ChatOpenAI(
-        model="deepseek-chat",
-        base_url="https://api.deepseek.com",
-        api_key=os.environ["DEEPSEEK_API_KEY"],
-        temperature=0.3
-    )
 
 
 def parse_json_response(raw: str) -> dict:

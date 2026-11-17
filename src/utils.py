@@ -1,20 +1,20 @@
 from functools import lru_cache
 from langchain_pinecone import PineconeVectorStore
-# Tambahkan ini agar VPS bisa menemukan folder src kamu
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from config.config import PINECONE_INDEX_NAME
+from config.config import EMBEDDING_DIMENSIONS, PINECONE_INDEX_NAME, get_required_env
 from src.embedding import JinaEmbedding
+from src.normalization import (
+    MISSING_INFO, normalize_account, normalize_document_text, normalize_instagram_url, normalize_text,
+)
 
 
 @lru_cache(maxsize=1)
-def load_vectorstore(index_name: str = PINECONE_INDEX_NAME, dimensions: int = 512):
+def load_vectorstore(index_name: str = PINECONE_INDEX_NAME, dimensions: int = EMBEDDING_DIMENSIONS):
     # Inisialisasi sekali, dipakai ulang untuk request berikutnya
     embedding_function = JinaEmbedding(dimensions=dimensions)
     return PineconeVectorStore(
         index_name=index_name,
         embedding=embedding_function,
+        pinecone_api_key=get_required_env("PINECONE_API_KEY"),
     )
 
 
@@ -33,16 +33,18 @@ def build_context(docs):
     context = ""
     for i, doc in enumerate(docs):
         meta = doc.metadata if doc.metadata else {}
+        source = normalize_account(meta.get("sumber"))
+        source_url = normalize_instagram_url(meta.get("url"), source)
         context += (
             f"--- Dokumen {i+1} ---\n"
-            f"Nama Tempat: {meta.get('nama', '-')}\n"
-            f"Kategori: {meta.get('kategori', '-')}\n"
-            f"Deskripsi: {meta.get('deskripsi', '-')}\n"
-            f"Opini Food Vlogger: {meta.get('opini', '-')}\n"
-            f"Area: {meta.get('daerah', '-')}\n"
-            f"Sumber Akun: @{meta.get('sumber', '-')}\n"
-            f"URL Postingan: {meta.get('url', '-')}\n"
-            f"\nDetail Lengkap:\n{doc.page_content}\n\n"
+            f"Nama Tempat: {normalize_text(meta.get('nama'), MISSING_INFO)}\n"
+            f"Kategori: {normalize_text(meta.get('kategori'), MISSING_INFO)}\n"
+            f"Deskripsi: {normalize_text(meta.get('deskripsi'), MISSING_INFO)}\n"
+            f"Opini Food Vlogger: {normalize_text(meta.get('opini'), MISSING_INFO)}\n"
+            f"Area: {normalize_text(meta.get('daerah'), MISSING_INFO)}\n"
+            f"Sumber Akun: {source or MISSING_INFO}\n"
+            f"URL Postingan: {source_url or MISSING_INFO}\n"
+            f"\nDetail Lengkap:\n{normalize_document_text(doc.page_content, source)}\n\n"
         )
     return context
 

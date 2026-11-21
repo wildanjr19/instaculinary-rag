@@ -1,85 +1,62 @@
-# 🍜 Kitab Kuliner — Culinary RAG
+﻿# Kitab Kuliner
 
-<p align="center">
-  <img src="assets/homepage.png" alt="Halaman Kitab Kuliner" width="800" />
-</p>
+Find places to eat in Yogyakarta and Surakarta (Solo), with recommendations grounded in Instagram food vlogger data.
 
-Kitab Kuliner memberikan rekomendasi kuliner Yogyakarta dan Surakarta (Solo)
-berdasarkan data Instagram food vlogger. Proyek ini dikembangkan saat magang
-sebagai Data Scientist di DataIns.
+Kitab Kuliner uses Retrieval-Augmented Generation (RAG) to turn everyday questions into dining recommendations with venue details and Instagram source links. Developed during a Data Scientist internship at DataIns, the project covers data preparation, semantic search, an API, and a web interface.
 
-Pengguna mengirim satu pertanyaan dan menerima kartu rekomendasi berisi nama
-tempat, alamat, jam buka, harga, kategori, deskripsi, serta tautan sumber Instagram.
-Saat ini setiap pencarian berdiri sendiri; belum ada riwayat percakapan.
+![Kitab Kuliner search interface](assets/homepage.png)
 
-## Tentang proyek
+## User workflow
 
-Proyek ini mengolah informasi kuliner dari Instagram menjadi data yang dapat
-dicari melalui pertanyaan sehari-hari. Cakupannya meliputi pengolahan data,
-pencarian informasi dengan RAG, API backend, dan antarmuka web untuk menampilkan
-rekomendasi.
+1. Open the web app and enter a question, such as "Ada rekomendasi gudeg di Yogyakarta?", or choose a suggested query and submit it.
+2. Review recommendation cards with venue names, addresses, opening hours, prices, categories, and descriptions, where available.
+3. Follow the Instagram source links to check the original information.
 
-## Yang ditawarkan
+Each search is independent. The app currently has no conversation history or structured filters for location, price, or opening hours.
 
-- Pencarian lewat bahasa sehari-hari. Pengguna dapat menulis pertanyaan untuk
-  mencari tempat makan, misalnya: "Ada rekomendasi gudeg di Yogyakarta?"
-- Rekomendasi dengan konteks lokal, berfokus pada kuliner Yogyakarta dan Solo
-  dari data Instagram food vlogger.
-- Informasi tempat makan dalam kartu yang memuat alamat, jam buka, harga,
-  kategori, dan deskripsi, sehingga hasil pencarian mudah dibaca.
-- Tautan sumber Instagram pada rekomendasi agar pengguna dapat menelusuri
-  informasi asalnya.
+## Developer workflow
 
-## Cara kerja
+1. Prepare Instagram data through extraction, categorization, and LLM-assisted description and opinion processing. Export the final knowledge base as a CSV.
+2. Validate records, generate 512-dimensional embeddings with Jina AI, and upload documents to an existing Pinecone index using `python -m src.create_vector_db`.
+3. Retrieve the five closest documents for each question. Pass their context to DeepSeek through LangChain to generate structured recommendations.
+4. Serve results through FastAPI and the Next.js API proxy, then render recommendation cards in the browser.
+5. Validate changes with backend unit tests and frontend lint, type checks, production builds, and proxy integration tests. GitHub Actions runs these checks on pushes and pull requests.
 
-Kitab Kuliner memakai Retrieval-Augmented Generation (RAG): aplikasi mencari
-informasi yang relevan dari data kuliner sebelum menyusun jawaban.
+```text
+Data:   Instagram data -> extraction -> CSV -> Jina embeddings -> Pinecone
+Search: Web app -> FastAPI -> Jina query embedding -> Pinecone -> DeepSeek -> cards
+```
 
-1. Data Instagram melalui tahap ekstraksi, kategorisasi, dan pengolahan deskripsi
-   serta opini hingga menjadi knowledge base.
-2. Jina AI mengubah data tersebut menjadi representasi numerik yang disebut
-   embedding, lalu aplikasi menyimpannya di Pinecone untuk pencarian.
-3. Saat pengguna mengirim pertanyaan, aplikasi mencari lima dokumen yang paling
-   relevan di Pinecone.
-4. DeepSeek menggunakan informasi hasil pencarian untuk menyusun jawaban.
-   Aplikasi menampilkannya sebagai kartu rekomendasi beserta tautan sumber.
+Updating the CSV requires re-ingestion before searches reflect the changes.
 
-Data tempat makan perlu diproses dan diunggah ke Pinecone sebelum dapat digunakan
-dalam pencarian. Perubahan pada CSV saja belum memperbarui jawaban aplikasi.
+## Tech stack
 
-## Teknologi utama
-
-| Bagian | Teknologi |
+| Layer | Technologies |
 | --- | --- |
-| Frontend | Next.js, React, TypeScript, Tailwind CSS |
-| Backend | FastAPI, Pydantic, Uvicorn |
-| Integrasi RAG | LangChain |
-| Pencarian data | Jina AI untuk embedding dan Pinecone untuk penyimpanan vektor |
-| Penyusunan jawaban | DeepSeek |
-| Pengolahan data | Pandas dan Jupyter Notebook |
+| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS 4 |
+| Backend | Python 3.11+, FastAPI, Pydantic, Uvicorn |
+| RAG orchestration | LangChain |
+| Embeddings and retrieval | Jina AI (`jina-embeddings-v3`), Pinecone |
+| Response generation | DeepSeek (`deepseek-chat`) |
+| Data preparation | Pandas, Jupyter Notebook |
+| CI | GitHub Actions |
 
-## Status dan batasan
+## Run locally
 
-Dataset belum dipublikasikan. Repository ini tidak menyertakan CSV, notebook,
-model lokal, atau kredensial. Pencarian dan penyusunan jawaban memerlukan layanan
-eksternal serta index Pinecone yang sudah berisi data.
+Requires Python 3.11+, Node.js 20.9+, npm, API keys for DeepSeek, Jina AI, and Pinecone, and a populated 512-dimensional Pinecone index.
 
-- Setiap pencarian berdiri sendiri; belum ada riwayat percakapan.
-- Pencarian masih berdasarkan kemiripan informasi, tanpa filter terstruktur
-  untuk wilayah, harga, atau jam buka dan tanpa tahap pemeringkatan ulang
-  (reranker).
-- Login, panel admin, database SQLite, dan CRUD belum diimplementasikan.
-- Integrasi Google Maps dan perluasan wilayah masih berupa rencana.
+1. Create and activate a Python virtual environment, then run `python -m pip install -r requirements.txt`.
+2. Copy `.env.example` to `.env` and fill in the provider keys and index name. Copy `frontend/.env.example` to `frontend/.env.local` and set the backend URL.
+3. Start the backend from the repository root: `python -m uvicorn backend.api:app --reload --port 8000`.
+4. In another terminal, open `frontend/`, run `npm ci`, then `npm run dev`. Open [localhost:3000](http://localhost:3000).
 
-## Dokumentasi teknis
+The dataset is not public. CSV files, notebooks, local models, and credentials are excluded from the repository; a clone alone cannot serve recommendations.
 
-- [Arsitektur aplikasi](docs/architecture.md): konfigurasi model, alur pencarian,
-  timeout, dan penanganan request.
-- [Data dan ingest Pinecone](docs/data.md): tahapan pengolahan data, format CSV,
-  dan pembaruan index.
-- [Pengembangan dan pengujian](docs/development.md): cara menjalankan secara
-  lokal, dependensi, struktur kode, pengujian, dan CI.
-- [Deployment](docs/deployment.md): workflow manual dan kebutuhan VPS.
+## Technical documentation
 
-Tampilan terinspirasi dari [pasal.id](https://pasal.id) oleh
-[@ilhamfputra](https://github.com/ilhamfputra).
+- [Architecture](docs/architecture.md): retrieval pipeline, model configuration, and request handling.
+- [Data and ingestion](docs/data.md): CSV schema, Pinecone setup, and index updates.
+- [Development](docs/development.md): platform-specific setup, tests, and CI.
+- [Deployment](docs/deployment.md): manual deployment workflow and VPS requirements.
+
+Interface inspired by [pasal.id](https://pasal.id) by [@ilhamfputra](https://github.com/ilhamfputra).

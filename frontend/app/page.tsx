@@ -93,14 +93,14 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <Image
               src="/images/logo_v2.svg"
-              alt="Logo Kitab Kuliner"
+              alt="Logo Instaculinary"
               width={40}
               height={40}
               className="h-10 w-10 object-contain"
               priority
             />
             {/* Menggunakan arbitrary value untuk font serif */}
-            <h1 className="text-2xl font-['Playfair_Display',_serif] text-[#033B2B]">Kitab Kuliner</h1>
+            <h1 className="text-2xl font-['Playfair_Display',_serif] text-[#033B2B]">Instaculinary</h1>
           </div>
           <nav className="flex items-center gap-7">
             <a href="#" className="text-gray-700 hover:text-[#005D41] text-sm font-medium">Cari</a>
@@ -118,7 +118,7 @@ export default function Home() {
                <div className="h-20 w-20 border border-gray-800 rounded-full bg-white/85 p-2 shadow-sm flex items-center justify-center">
                  <Image
                    src="/images/logo_v2.svg"
-                   alt="Ikon Kitab Kuliner"
+                   alt="Ikon Instaculinary"
                    width={60}
                    height={60}
                    className="h-14 w-14 object-contain"

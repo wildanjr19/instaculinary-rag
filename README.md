@@ -1,10 +1,10 @@
-﻿# Kitab Kuliner
+﻿# Instaculinary
 
 Find places to eat in Yogyakarta and Surakarta (Solo), with recommendations grounded in Instagram food vlogger data.
 
-Kitab Kuliner uses Retrieval-Augmented Generation (RAG) to turn everyday questions into dining recommendations with venue details and Instagram source links. Developed during a Data Scientist internship at DataIns, the project covers data preparation, semantic search, an API, and a web interface.
+Instaculinary uses Retrieval-Augmented Generation (RAG) to turn everyday questions into dining recommendations with venue details and Instagram source links. Developed during a Data Scientist internship at DataIns, the project covers data preparation, semantic search, an API, and a web interface.
 
-![Kitab Kuliner search interface](assets/homepage.png)
+![Instaculinary search interface](assets/home.png)
 
 ## User workflow
 

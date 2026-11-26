@@ -1,1 +1,1 @@
-"""HTTP API untuk Kitab Kuliner."""
+"""HTTP API untuk Instaculinary."""

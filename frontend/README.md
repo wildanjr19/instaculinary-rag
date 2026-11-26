@@ -1,4 +1,4 @@
-# Frontend Kitab Kuliner
+# Frontend Instaculinary
 
 Next.js 16.1.6, React 19.2.3, TypeScript, dan Tailwind CSS 4. Memerlukan
 Node.js 20.9+ dan npm.
